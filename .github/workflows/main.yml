@@ -19,6 +19,8 @@ jobs:
           name: test-results
           path: build/reports/jacoco/test/jacocoTestReport.xml
   coverage:
+    name: Upload Coverage Report
+    needs: build_test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
