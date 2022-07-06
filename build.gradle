@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.7.1'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
+    id 'jacoco'
 }
 
 group = 'com.example'
@@ -20,3 +21,18 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+tasks.withType(Test) {
+    systemProperty "file.encoding", "UTF-8"
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+    }
+}
+
+test.finalizedBy jacocoTestReport

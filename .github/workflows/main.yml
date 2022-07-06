@@ -1,7 +1,7 @@
 name: Main
 on: [push]
 jobs:
-  build:
+  build_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -10,5 +10,6 @@ jobs:
         with:
           java-version: 17
           distribution: 'adopt'
-      - name: Build with Gradle
-        run: ./gradlew build
+          cache: gradle
+      - name: Run tests
+        run: ./gradlew --no-daemon --stacktrace test
