@@ -1,5 +1,7 @@
 name: Main
 on: [push]
+env:
+  JACOCO_REPORT_REGEX: .*/reports/jacoco/test/jacocoTestReport.xml
 jobs:
   build_test:
     name: Build and Test
@@ -14,15 +16,19 @@ jobs:
           cache: gradle
       - name: Run tests
         run: ./gradlew --no-daemon --stacktrace test
+      - name: Collect test results
+        run: |
+          mkdir -p /tmp/codacy
+          find . -type f -regex "$JACOCO_REPORT_REGEX" -exec echo {} \; -exec cp --parents {} /tmp/codacy \;
       - name: Archive test report
         uses: actions/upload-artifact@v3
         with:
           name: test-results
-          path: build/reports/jacoco/test/jacocoTestReport.xml
+          path: /tmp/codacy
   coverage:
     name: Upload Coverage Report
     needs: build_test
-    if: github.ref != 'refs/heads/master'
+    if: github.ref != 'refs/heads/dev'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,9 +36,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: test-results
+      - name: Find files
+        run: echo "files=$(find . -type f -regex "$JACOCO_REPORT_REGEX" | paste -s -d ',' -)" >> $GITHUB_ENV
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: jacocoTestReport.xml
+          coverage-reports: ${{ env.files }}
 
